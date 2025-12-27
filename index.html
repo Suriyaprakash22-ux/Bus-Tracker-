@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Bus Tracker{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="hero-section">
+        <h2>Welcome to Bus Tracker</h2>
+        <p>Track buses in real-time across Trichy, Coimbatore, Chennai, and inside Trichy areas</p>
+    </div>
+
+    <div class="routes-grid">
+        {% for city_key, city_data in routes.items() %}
+        <div class="route-card">
+            <div class="route-card-header">
+                <h3>{{ city_data.name }}</h3>
+                <span class="route-count">{{ city_data.routes|length }} Routes</span>
+            </div>
+            <div class="route-list">
+                {% for route in city_data.routes %}
+                <div class="route-item">
+                    <div class="route-info">
+                        <span class="route-id">{{ route.id }}</span>
+                        <span class="route-name">{{ route.name }}</span>
+                    </div>
+                    <a href="{{ url_for('track_route', route_id=route.id) }}" class="btn-track">Track</a>
+                </div>
+                {% endfor %}
+            </div>
+            <a href="{{ url_for('route_view', city=city_key) }}" class="btn-view-all">View All {{ city_data.name }} Routes</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+

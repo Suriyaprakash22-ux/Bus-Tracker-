@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}{{ city_data.name }} Routes - Bus Tracker{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <a href="{{ url_for('index') }}" class="back-link">← Back to Home</a>
+        <h2>{{ city_data.name }} Bus Routes</h2>
+    </div>
+
+    <div class="routes-list">
+        {% for route in city_data.routes %}
+        <div class="route-card-detailed">
+            <div class="route-header">
+                <div class="route-title">
+                    <span class="route-id-badge">{{ route.id }}</span>
+                    <h3>{{ route.name }}</h3>
+                </div>
+                <a href="{{ url_for('track_route', route_id=route.id) }}" class="btn-primary">Track Route</a>
+            </div>
+            <div class="route-stops">
+                <h4>Stops:</h4>
+                <div class="stops-list">
+                    {% for stop in route.stops %}
+                    <span class="stop-badge">{{ stop }}</span>
+                    {% if not loop.last %}
+                    <span class="stop-arrow">→</span>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+

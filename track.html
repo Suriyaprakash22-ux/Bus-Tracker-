@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Track {{ route.name }} - Bus Tracker{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <a href="{{ url_for('route_view', city=city) }}" class="back-link">← Back to Routes</a>
+        <h2>Track: {{ route.name }}</h2>
+        <p class="route-id-display">Route ID: {{ route.id }}</p>
+    </div>
+
+    <div class="route-map">
+        <div class="route-stops-map">
+            {% for stop in route.stops %}
+            <div class="stop-point" data-stop="{{ stop }}">
+                <div class="stop-circle"></div>
+                <div class="stop-label">{{ stop }}</div>
+            </div>
+            {% if not loop.last %}
+            <div class="route-line"></div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="buses-section">
+        <h3>Active Buses</h3>
+        <div class="buses-grid" id="busesGrid">
+            {% for bus in buses %}
+            <div class="bus-card" data-bus-id="{{ route.id }}-{{ loop.index }}">
+                <div class="bus-header">
+                    <span class="bus-id">Bus {{ loop.index }}</span>
+                    <span class="bus-status status-{{ bus.status.lower().replace(' ', '-') }}">{{ bus.status }}</span>
+                </div>
+                <div class="bus-info">
+                    <div class="info-item">
+                        <span class="info-label">Current Stop:</span>
+                        <span class="info-value">{{ bus.current_stop }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Next Stop:</span>
+                        <span class="info-value">{{ bus.next_stop }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">ETA:</span>
+                        <span class="info-value eta">{{ bus.eta }} min</span>
+                    </div>
+                </div>
+                <div class="bus-updated">
+                    Updated: <span class="update-time">{{ bus.last_updated[:19] }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Auto-refresh bus locations every 10 seconds
+    setInterval(function() {
+        fetch('/api/buses?route_id={{ route.id }}')
+            .then(response => response.json())
+            .then(data => {
+                updateBusCards(data);
+            })
+            .catch(error => console.error('Error:', error));
+    }, 10000);
+
+    function updateBusCards(buses) {
+        Object.keys(buses).forEach(busId => {
+            const bus = buses[busId];
+            const busCard = document.querySelector(`[data-bus-id="${busId}"]`);
+            if (busCard) {
+                const statusEl = busCard.querySelector('.bus-status');
+                const currentStopEl = busCard.querySelector('.info-item:nth-child(1) .info-value');
+                const nextStopEl = busCard.querySelector('.info-item:nth-child(2) .info-value');
+                const etaEl = busCard.querySelector('.eta');
+                const updateTimeEl = busCard.querySelector('.update-time');
+
+                if (statusEl) {
+                    statusEl.textContent = bus.status;
+                    statusEl.className = `bus-status status-${bus.status.toLowerCase().replace(' ', '-')}`;
+                }
+                if (currentStopEl) currentStopEl.textContent = bus.current_stop;
+                if (nextStopEl) nextStopEl.textContent = bus.next_stop;
+                if (etaEl) etaEl.textContent = `${bus.eta} min`;
+                if (updateTimeEl) updateTimeEl.textContent = bus.last_updated.substring(0, 19);
+            }
+        });
+    }
+</script>
+{% endblock %}
+
